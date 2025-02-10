@@ -90,6 +90,3 @@ To contribute to this project:
 1. Fork the repository
 2. Create a feature branch
 3. Submit a pull request with a clear description of changes
-
-## License
-This project is available for educational use. Please check with your institution for specific licensing requirements.
