@@ -1,5 +1,4 @@
-
-const API_URL = 'https://script.google.com/macros/s/AKfycbw0Z1hLm5jZk1CR47Eh6onv1hhMMBwd3PLBRkQyPvlPipiris-k2iL66Iqpso80yKHFSg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbysBJjOXPKskREfzIJThE6yZKgSSx57YEM9w0Om5vlFPLxkUio_QTs0yn5M11vTrxTXew/exec';
 let seatingData = null;
 let currentClass = 'Class A';
 
@@ -19,6 +18,10 @@ async function fetchSeatingData() {
 function renderClassroom(className) {
     const classroom = document.querySelector('.classroom');
     classroom.innerHTML = '';
+
+    if(seatingData && !seatingData.classrooms[className]){
+        classroom.innerHTML = "<h3>No seating avaliable in this classroom.</h3>"
+    }
 
     if (!seatingData?.classrooms?.[className]) return;
 
