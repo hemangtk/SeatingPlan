@@ -1,26 +1,61 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbysBJjOXPKskREfzIJThE6yZKgSSx57YEM9w0Om5vlFPLxkUio_QTs0yn5M11vTrxTXew/exec';
-let seatingData = null;
-let currentClass = 'Class A';
-
-// Fetch data from API
-async function fetchSeatingData() {
-    try {
-        const response = await fetch(API_URL);
-        seatingData = await response.json();
-        renderClassroom(currentClass);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        document.querySelector('.classroom').innerHTML = 'Error loading seating arrangement. Please try again later.';
+// 🔹 Dummy seating data (hardcoded instead of API fetch)
+let seatingData = {
+    classrooms: {
+        "Class A": {
+            "Column 1": [
+                3,
+                [
+                    ["student1@email.com", "student2@email.com", "student3@email.com"],
+                    ["student4@email.com", "student5@email.com", "student6@email.com"],
+                    ["student7@email.com", "student8@email.com", "student9@email.com"]
+                ]
+            ],
+            "Column 2": [
+                2,
+                [
+                    ["student10@email.com", "student11@email.com"],
+                    ["student12@email.com", "N/A"],
+                    ["student13@email.com", "student14@email.com"]
+                ]
+            ]
+        },
+        "Class B": {
+            "Left Section": [
+                4,
+                [
+                    ["alice@email.com", "bob@email.com", "N/A", "carol@email.com"],
+                    ["david@email.com", "N/A", "eve@email.com", "frank@email.com"]
+                ]
+            ],
+            "Right Section": [
+                3,
+                [
+                    ["george@email.com", "harry@email.com", "ian@email.com"],
+                    ["jack@email.com", "karen@email.com", "lisa@email.com"]
+                ]
+            ]
+        },
+        "Class C": {
+            "Main Block": [
+                2,
+                [
+                    ["studentA@email.com", "studentB@email.com"],
+                    ["studentC@email.com", "studentD@email.com"]
+                ]
+            ]
+        }
     }
-}
+};
+
+let currentClass = 'Class A';
 
 // Render classroom layout
 function renderClassroom(className) {
     const classroom = document.querySelector('.classroom');
     classroom.innerHTML = '';
 
-    if(seatingData && !seatingData.classrooms[className]){
-        classroom.innerHTML = "<h3>No seating avaliable in this classroom.</h3>"
+    if (seatingData && !seatingData.classrooms[className]) {
+        classroom.innerHTML = "<h3>No seating available in this classroom.</h3>";
     }
 
     if (!seatingData?.classrooms?.[className]) return;
@@ -69,102 +104,65 @@ function renderClassroom(className) {
     });
 }
 
-// Enhanced search functionality with smooth scroll
+// Enhanced search functionality
 function searchSeats(searchTerm) {
     const seats = document.querySelectorAll('.seat');
     let firstMatch = null;
-    
+
     seats.forEach(seat => {
         seat.classList.remove('highlight');
         if (searchTerm && seat.textContent.toLowerCase().includes(searchTerm.toLowerCase())) {
             seat.classList.add('highlight');
-            if (!firstMatch) {
-                firstMatch = seat;
-            }
+            if (!firstMatch) firstMatch = seat;
         }
     });
 
-    // If a match is found, scroll to it
     if (firstMatch) {
-        // First scroll the column into view
-        const columnDiv = firstMatch.closest('.column');
-        const classroom = document.querySelector('.classroom');
-        
-        const scrollOptions = {
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
-        };
-
-        // Add a brief delay to make the highlight more noticeable
+        const scrollOptions = { behavior: 'smooth', block: 'center', inline: 'center' };
         setTimeout(() => {
             firstMatch.scrollIntoView(scrollOptions);
-            
-            // Add a pulse animation to make it more noticeable
             firstMatch.style.animation = 'none';
-            firstMatch.offsetHeight; // Trigger reflow
+            firstMatch.offsetHeight;
             firstMatch.style.animation = 'pulse 1s';
         }, 100);
     }
 }
 
 function initializeTheme() {
-    // Check for saved theme preference or system preference
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    } else if (systemPrefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    else if (systemPrefersDark) document.documentElement.setAttribute('data-theme', 'dark');
 }
 
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
 }
+
 document.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
 initializeTheme();
 
-
-// Add pulse animation to stylesheet
 const style = document.createElement('style');
 style.textContent = `
 @keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
-    }
-}
-`;
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+    50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}`;
 document.head.appendChild(style);
 
-// Debounce function to improve search performance
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
     };
 }
 
-// Event Listeners
+// Class button click
 document.querySelector('.class-selector').addEventListener('click', (e) => {
     if (e.target.classList.contains('class-btn')) {
         document.querySelectorAll('.class-btn').forEach(btn => btn.classList.remove('active'));
@@ -174,7 +172,7 @@ document.querySelector('.class-selector').addEventListener('click', (e) => {
     }
 });
 
-// Add debounced search
+// Debounced search
 const debouncedSearch = debounce((e) => {
     searchSeats(e.target.value);
 }, 300);
@@ -182,4 +180,4 @@ const debouncedSearch = debounce((e) => {
 document.querySelector('.search-box').addEventListener('input', debouncedSearch);
 
 // Initial load
-fetchSeatingData();
+renderClassroom(currentClass);
